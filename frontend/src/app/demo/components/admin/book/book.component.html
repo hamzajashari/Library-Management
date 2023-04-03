@@ -1,0 +1,191 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+              
+                <ng-template pTemplate="left">
+                   
+                    <div class="my-2">
+                        <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedBooks()" [disabled]="!selectedBooks || !selectedBooks.length"></button>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help" (click)="dt.exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+<div>
+            <p-table #dt [value]="books" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedBooks" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Books</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th>Code</th>
+                        <th>Image</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
+                        <th pSortableColumn="quantity">Quantity <p-sortIcon field="quantity"></p-sortIcon></th>
+                        <th pSortableColumn="author">Author <p-sortIcon field="author"></p-sortIcon></th>
+                        <th pSortableColumn="publisher">Publisher <p-sortIcon field="publisher"></p-sortIcon></th>
+                        <th pSortableColumn="rating">Rating <p-sortIcon field="rating"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-book>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="book"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Code</span>
+                            {{book.code || book.id}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;" (click)="bookDetail(this.book.id)"><span class="p-column-title">Image</span>
+                            <img [src]="book.image" (error) ="changeSource($event)" [alt]="book.image" width="100" class="shadow-4" />
+                        </td>
+                        <td style="width:14%; min-width:10rem;" (click)="bookDetail(this.book.id)">
+                            <span class="p-column-title" >Name</span>
+                            {{ book.name | slice:0:27 }}{{ book.name.length > 27 ? '...' : '' }}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Price</span>
+                            ${{book.price}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Quantity</span>
+                            {{book.quantity}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Author</span>
+                            {{book.author.name}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Publisher</span>
+                            {{book.publisher.name}}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;"><span class="p-column-title">Reviews</span>
+                            <p-rating [ngModel]="book.rating" [readonly]="true" [cancel]="false"></p-rating>
+                        </td>
+                     
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editBook(book)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteBook(book)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="bookDialog" [style]="{width: '450px'}" header="Book Details" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <img [src]="book.image" [alt]="book.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2">
+                <div class="field">
+                    <label for="name">Name</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="book.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !book.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !book.name">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="image">Image</label>
+                    <input type="text" pInputText id="image" [(ngModel)]="book.image" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !book.image}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !book.image">Image is required.</small>
+                </div>
+                <div class="field">
+                    <label for="description">Description</label>
+                    <textarea id="description" pInputTextarea [(ngModel)]="book.description" required rows="3" cols="20"></textarea>
+                </div>
+
+               
+                <div class="field">
+                    <label class="mb-3">Category</label>
+                    <div class="formgrid grid">
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="category1" name="category" value="Action and Adventure" [(ngModel)]="book.category"></p-radioButton>
+                            <label for="category1">Action and Adventure</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="category2" name="category" value="Historical" [(ngModel)]="book.category"></p-radioButton>
+                            <label for="category2">Historical</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="category3" name="category" value="Biographies" [(ngModel)]="book.category"></p-radioButton>
+                            <label for="category3">Biographies</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="category4" name="category" value="Mystery" [(ngModel)]="book.category"></p-radioButton>
+                            <label for="category4">Mystery</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="publisher">Author</label>
+                    <p-autoComplete [(ngModel)]="author" [suggestions]="authors" (completeMethod)="listAuthors($event)" [dropdown]="true" field="name" [required]="true" [ngClass]="{'ng-invalid ng-dirty' : submitted && !author}"></p-autoComplete>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !author">Author is required.</small>
+                </div>
+                <div class="field">
+                        <label for="publisher">Publisher</label>
+                        <p-autoComplete [(ngModel)]="publisher" [suggestions]="publishers" (completeMethod)="listPublishers($event)" [dropdown]="true" field="name" [required]="true" [ngClass]="{'ng-invalid ng-dirty' : submitted && !publisher}"></p-autoComplete>
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !publisher">Publisher is required.</small>
+
+                </div>
+                <div class="field">
+                    <label for="rating">Rating</label>
+                    <p-inputNumber id="rating" [(ngModel)]="book.rating" [min]="0" [max]="5" [showButtons]="true"  mode="decimal"></p-inputNumber>
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col">
+                        <label for="price">Price</label>
+                        <p-inputNumber id="price" [(ngModel)]="book.price" mode="currency" currency="USD" locale="en-US" [min]="0"></p-inputNumber>
+                    </div>
+                    <div class="field col">
+                        <label for="quantity">Quantity</label>
+                        <p-inputNumber id="quantity" [(ngModel)]="book.quantity" [min]="0"></p-inputNumber>
+                    </div>
+                </div>
+                
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveBook()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteBookDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="book">Are you sure you want to delete <b>{{book.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteBookDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteBooksDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>Are you sure you want to delete selected Books?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteBooksDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

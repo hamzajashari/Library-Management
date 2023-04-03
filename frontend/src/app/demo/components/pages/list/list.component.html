@@ -1,0 +1,74 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+			<p-dataView #dv [value]="books" [paginator]="true" [rows]="9" filterBy="name" [sortField]="sortField" [sortOrder]="sortOrder" layout="grid">
+				<ng-template pTemplate="header">
+					<div class="grid grid-nogutter flex-column md:flex-row justify-content-between">
+						<p-dropdown [options]="sortOptions" class="my-2" placeholder="Sort By Price" (onChange)="onSortChange($event)"></p-dropdown>
+						<span class="p-input-icon-left my-2">
+                            <i class="pi pi-search"></i>
+                            <input type="search" pInputText placeholder="Search by Name" (input)="onFilter(dv, $event)">
+                        </span>
+						<p-dataViewLayoutOptions class="my-2 hidden md:inline-flex" ></p-dataViewLayoutOptions>
+					</div>
+				</ng-template>
+
+				<ng-template  let-book pTemplate="listItem">
+					<div class="col-12">
+						<div class="flex flex-column md:flex-row align-items-center p-3 w-full">
+							<img src="{{book.image}}" (click)="bookDetail(this.book.id)" (error) ="changeSource($event)" [alt]="book.name" class="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"/>
+							<div class="flex-1 text-center md:text-left">
+								<div class="font-bold text-2xl" (click)="bookDetail(this.book.id)">{{ book.name | slice:0:27 }}{{ book.name.length > 27 ? '...' : '' }}</div>
+								<p-rating class="my-1" [ngModel]="book.rating" [readonly]="true" [cancel]="false"></p-rating>
+								<div class="flex align-items-center my-2">
+									<i class="pi pi-tag mr-2"></i>
+									<span class="font-semibold">{{book.category}}</span>
+								</div>
+								<span [class]="'book-badge status-' + book.inventoryStatus.toLowerCase()">{{book.inventoryStatus}}</span>
+							</div>
+							<div class="flex justify-content-end flex-wrap">
+								<div class="grid">
+									<div class="col-12 flex align-items-end justify-content-end ">
+										<span class="text-2xl font-semibold">${{book.price}}</span>
+									</div>
+									<div class="col-12 flex align-items-end justify-content-end">
+										<p-button icon="pi pi-shopping-cart" (click)="addBookToCart(this.book.id)" label="Add to Cart" [disabled]="book.inventoryStatus === 'OUTOFSTOCK'"></p-button>
+									</div>
+									<div class="col-12 flex align-items-end justify-content-end ">
+										<button icon="pi pi-heart" (click)="addBookToWish(this.book.id)" label="Add to Wish" pButton type="button" class="p-button-danger"></button>	
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ng-template>
+
+				<ng-template let-book pTemplate="gridItem">
+					<div class="col-12 md:col-4">
+						<div class="card m-3 border-1 surface-border hover:surface-100">
+							<div class="flex align-items-center justify-content-between">
+								<div class="flex align-items-center">
+									<i class="pi pi-tag mr-2"></i>
+									<span class="font-semibold">{{book.category}}</span>
+								</div>
+								<span [class]="'sm:ml-2 book-badge status-' + book.inventoryStatus.toLowerCase()">{{book.inventoryStatus}}</span>
+							</div>
+							<div class="text-center">
+								<img src="{{book.image}}" (error) ="changeSource($event)" (click)="bookDetail(this.book.id)" [alt]="book.name"class=" shadow-2 my-3 mx-0" width="160px" height="250px"/>
+								<div class="text-2xl font-bold" (click)="bookDetail(this.book.id)">{{ book.name | slice:0:27 }}{{ book.name.length > 27 ? '...' : '' }}</div>
+								<p-rating [ngModel]="book.rating" [readonly]="true" [cancel]="false"></p-rating>
+							</div>
+							<div class="flex align-items-center justify-content-between">
+								<span class="text-2xl font-semibold">${{book.price}}</span>
+								<div>
+								<p-button class="m-2" icon="pi pi-shopping-cart" (click)="addBookToCart(this.book.id)" [disabled]="book.inventoryStatus === 'OUTOFSTOCK'"></p-button>
+								<button icon="pi pi-heart" (click)="addBookToWish(this.book.id)"  pButton type="button" class="p-button-danger"></button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ng-template>
+			</p-dataView>
+		</div>
+	</div>
+</div>
